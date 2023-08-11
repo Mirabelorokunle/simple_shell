@@ -76,7 +76,7 @@ ssize_t get_line3(char **lneptr1, size_t *n, FILE *stream)
 void fetch_SIGINT(int sig)
 {
 	(void)sig;
-	write(STDOUT_FILENO, "\ndafetite ", 20);
+	write(STDOUT_FILENO, "\n ", 2);
 }
 
 /**

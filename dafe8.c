@@ -1,135 +1,222 @@
-#include "header.h"
+#include "main.h"
+
+/* .........................NUM 12 END.........................*/
 
 /**
- * strcartenate_current_dir - function
- * @datshell: data
- * @msges: message
- * @error: output
- * @ver_strC: counter
- * Return: error
+ * confirmdtenvironmente - checks
+ *
+ * @h: head
+ * @in: input
+ * @data: data
  */
 
-char *strcartenate_current_dir(data_shell *datshell, char *msges,
-								char *error, char *ver_strC)
+void confirmdtenvironmente(strct_var **h, char *in, dataSHLL *data)
 {
-	char *illegal_flag;
+	int row, chr, j, lval;
+	char **EnvrT;
 
-	string_copy(error, datshell->av[0]);
-	string_cartenate(error, ": ");
-	string_cartenate(error, ver_strC);
-	string_cartenate(error, ": ");
-	string_cartenate(error, datshell->args[0]);
-	string_cartenate(error, msges);
-	if (datshell->args[1][0] == '-')
+	EnvrT = data->dtenviron;
+	for (row = 0; EnvrT[row]; row++)
 	{
-		illegal_flag = malloc(3);
-		illegal_flag[0] = '-';
-		illegal_flag[1] = datshell->args[1][1];
-		illegal_flag[2] = '\0';
-		string_cartenate(error, illegal_flag);
-		freeCharMemDaf(illegal_flag);
+		for (j = 1, chr = 0; EnvrT[row][chr]; chr++)
+		{
+			if (EnvrT[row][chr] == '=')
+			{
+				lval = string_length(EnvrT[row] + chr + 1);
+				include_Revar_node(h, j, EnvrT[row] + chr + 1, lval);
+				return;
+			}
+			if (in[j] == EnvrT[row][chr])
+				j++;
+			else
+				break;
+		}
 	}
-	else
+	for (j = 0; in[j]; j++)
 	{
-		string_cartenate(error, datshell->args[1]);
+		if (in[j] == ' ' || in[j] == '\t' || in[j] == ';' || in[j] == '\n')
+			break;
 	}
-
-	string_cartenate(error, "\n");
-	string_cartenate(error, "\0");
-	return (error);
+	include_Revar_node(h, j, NULL, 0);
 }
-
-/* .........................NUM 16 START.......................*/
 
 /**
- * error_getcurrent_dir - error
- * @datshell: data
- * Return: Error
+ * confirm_variable - check
+ *
+ * @h: head
+ * @in: input
+ * @st: lastar
+ * @data: data structure
+ * Return: int
  */
 
-char *error_getcurrent_dir(data_shell *datshell)
+int confirm_variable(strct_var **h, char *in, char *st, dataSHLL *data)
 {
-	int length, len_id1;
-	char *error, *ver_strC, *msges;
+	int i, lsth, lpdj;
 
-	ver_strC = autIToAlph(datshell->counter);
-	if (datshell->args[1][0] == '-')
+	lsth = string_length(st);
+	lpdj = string_length(data->pid);
+
+	for (i = 0; in[i]; i++)
 	{
-		msges = print_message('i');
-		len_id1 = 2;
+		if (in[i] == '$')
+		{
+			if (in[i + 1] == '?')
+				include_Revar_node(h, 2, st, lsth), i++;
+			else if (in[i + 1] == '$')
+				include_Revar_node(h, 2, data->pid, lpdj), i++;
+			else if (in[i + 1] == '\n')
+				include_Revar_node(h, 0, NULL, 0);
+			else if (in[i + 1] == '\0')
+				include_Revar_node(h, 0, NULL, 0);
+			else if (in[i + 1] == ' ')
+				include_Revar_node(h, 0, NULL, 0);
+			else if (in[i + 1] == '\t')
+				include_Revar_node(h, 0, NULL, 0);
+			else if (in[i + 1] == ';')
+				include_Revar_node(h, 0, NULL, 0);
+			else
+				confirmdtenvironmente(h, in + i, data);
+		}
 	}
-	else
+	return (i);
+}
+
+
+/*..................iiiii............................*/
+
+
+
+/**
+ * rest_input - replace
+ *
+ * @head: head
+ * @input: input
+ * @n1_input: new
+ * @nlen1: new
+ * Return: replaced
+ */
+
+char *rest_input(strct_var **head, char *input, char *n1_input, int nlen1)
+{
+	strct_var *indx25;
+	int i, j, k;
+
+	indx25 = *head;
+	for (j = i = 0; i < nlen1; i++)
 	{
-		msges = print_message('c');
-		len_id1 = string_length(datshell->args[1]);
+		if (input[j] == '$')
+		{
+			if (!(indx25->len_var) && !(indx25->len_val))
+			{
+				n1_input[i] = input[j];
+				j++;
+			}
+			else if (indx25->len_var && !(indx25->len_val))
+			{
+				for (k = 0; k < indx25->len_var; k++)
+					j++;
+				i--;
+			}
+			else
+			{
+				for (k = 0; k < indx25->len_val; k++)
+				{
+					n1_input[i] = indx25->val[k];
+					i++;
+				}
+				j += (indx25->len_var);
+				i--;
+			}
+			indx25 = indx25->next;
+		}
+		else
+		{
+			n1_input[i] = input[j];
+			j++;
+		}
 	}
+	return (n1_input);
+}
 
-	length = string_length(datshell->av[0]) + string_length(datshell->args[0]);
-	length += string_length(ver_strC) + string_length(msges) + len_id1 + 5;
-	error = malloc(sizeof(char) * (length + 1));
+/**
+ * rest_variable - calls
+ *
+ * @input: input string
+ * @datshell: data structure
+ * Return: replaced string
+ */
 
-	if (error == 0)
+char *rest_variable(char *input, dataSHLL *datshell)
+{
+	strct_var *head, *indx25;
+	char *status, *n1_input;
+	int olen, nlen1;
+
+	status = autIToAlph(datshell->status);
+	head = NULL;
+
+	olen = confirm_variable(&head, input, status, datshell);
+
+	if (head == NULL)
 	{
-		freeCharMemDaf(ver_strC);
-		return (NULL);
+		freeCharMemDaf(status);
+		return (input);
 	}
 
-	error = strcartenate_current_dir(datshell, msges, error, ver_strC);
+	indx25 = head;
+	nlen1 = 0;
 
-	freeCharMemDaf(ver_strC);
+	while (indx25 != NULL)
+	{
+		nlen1 += (indx25->len_val - indx25->len_var);
+		indx25 = indx25->next;
+	}
 
-	return (error);
+	nlen1 += olen;
+
+	n1_input = malloc(sizeof(char) * (nlen1 + 1));
+	n1_input[nlen1] = '\0';
+
+	n1_input = rest_input(&head, input, n1_input, nlen1);
+
+	freeCharMemDaf(input);
+	freeCharMemDaf(status);
+	emptY_Revar_list(&head);
+
+	return (n1_input);
 }
 
-/* .........................NUM 16 BTW.........................*/
 /**
- * print_message - error
- * @option: data
- * Return: Error
+ * remove_command - deletes
+ *
+ * @in: input
+ * Return: input
  */
-
-char *print_message(char option)
+char *remove_command(char *in)
 {
-	char *msges;
+	int i, up2;
 
-	if (option == 'i')
-		msges = ": Invalid option ";
-	else if (option == 'c')
-		msges = ": can't cd to ";
-	else if (option == 's')
-		msges = ": Syntax error: \" ";
-	else if (option == 'u')
-		msges = "\" unexpected\n";
-	return (msges);
+	up2 = 0;
+	for (i = 0; in[i]; i++)
+	{
+		if (in[i] == '#')
+		{
+			if (i == 0)
+			{
+				freeCharMemDaf(in);
+				return (NULL);
+			}
+			if (in[i - 1] == ' ' || in[i - 1] == '\t' || in[i - 1] == ';')
+				up2 = i;
+		}
+	}
+	if (up2 != 0)
+	{
+		in = my_realloc(in, i, up2 + 1);
+		in[up2] = '\0';
+	}
+	return (in);
 }
-
-/* .........................NUM 16 END.........................*/
-
-/* .........................NUM 17 START.......................*/
-/**
- * aut_asstantEnvirone - Hl
- */
-
-void aut_asstantEnvirone(void)
-{
-	char *hlp = "env: env [option] [name=value] [command [args]]\n\t";
-
-	aut_asstantEnvironeDaf(hlp);
-}
-
-/* .........................NUM 17 BTW.........................*/
-/**
- * aut_asstantEnvironeDaf - Hlp
- * @hlp: str
- */
-
-void aut_asstantEnvironeDaf(char *hlp)
-{
-	write(STDOUT_FILENO, hlp, string_length(hlp));
-	hlp = "Print the enviroment of the shell.\n";
-	write(STDOUT_FILENO, hlp, string_length(hlp));
-}
-
-/* .........................NUM 17 END.........................*/
 
 

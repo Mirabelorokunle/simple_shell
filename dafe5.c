@@ -1,171 +1,125 @@
-#include "header.h"
+#include "main.h"
 
+/* .........................NUM 8 BTW...........................*/
 /**
- * change_dir_loc - changes
- * @datshell: data
+ * free_srtctLine_MemDaf - frees
+ * @temp: head
  */
 
-void change_dir_loc(data_shell *datshell)
+void free_srtctLine_MemDaf(srtctLine *temp)
 {
-	char pwd[PATH_MAX];
-	char *dir, *copy_pwdir, *copy_direc;
-
-	getcwd(pwd, sizeof(pwd));
-
-	dir = datshell->args[1];
-	if (chdir(dir) == -1)
-	{
-		get_error(datshell, 2);
-		return;
-	}
-
-	copy_pwdir = _strdup(pwd);
-	prepareEnvron("OLDPWD", copy_pwdir, datshell);
-
-	copy_direc = _strdup(dir);
-	prepareEnvron("PWD", copy_direc, datshell);
-
-	freeCharMemDaf(copy_pwdir);
-	freeCharMemDaf(copy_direc);
-
-	datshell->status = 0;
-
-	chdir(dir);
+	free(temp);
 }
+/* .........................NUM 8 END...........................*/
 
+/* .........................NUM 9 START.........................*/
 /**
- * change_dir_lastarg - changes
- * @datshell: data
+ * emptY_Revar_list - frees
+ * @head: head
  */
 
-void change_dir_lastarg(data_shell *datshell)
+void emptY_Revar_list(strct_var **head)
 {
-	char pwd[PATH_MAX];
-	char *p_pwd, *p_oldpwd, *copy_pwdir, *cp_oldpwd;
+	strct_var *temp;
+	strct_var *curr;
 
-	getcwd(pwd, sizeof(pwd));
-	copy_pwdir = _strdup(pwd);
+	if (head != NULL)
+	{
+		curr = *head;
+		while ((temp = curr) != NULL)
+		{
+			curr = curr->next;
+			free(temp);
+		}
+		*head = NULL;
+	}
+}
+/* .........................NUM 9 BTW...........................*/
 
-	p_oldpwd = getenviron("OLDPWD", datshell->dtenviron);
+/*..................eeeee............................*/
 
-	if (p_oldpwd == NULL)
-		cp_oldpwd = copy_pwdir;
+
+
+/**
+ * free_strct_var_MemDaf - frees
+ * @temp: head
+ */
+
+void free_strct_var_MemDaf(strct_var *temp)
+{
+	free(temp);
+}
+/* .........................NUM 9 END...........................*/
+
+/**
+ * include_LN_node_extr - adds
+ * @head: head
+ * @line: command
+ * Return: address
+ */
+srtctLine *include_LN_node_extr(srtctLine **head, char *line)
+{
+	srtctLine *new, *temp;
+
+	new = malloc(sizeof(srtctLine));
+	if (new == NULL)
+		return (NULL);
+
+	new->line = line;
+	new->next = NULL;
+	temp = *head;
+
+	if (temp == NULL)
+	{
+		*head = new;
+	}
 	else
-		cp_oldpwd = _strdup(p_oldpwd);
+	{
+		while (temp->next != NULL)
+			temp = temp->next;
+		temp->next = new;
+	}
 
-	prepareEnvron("OLDPWD", copy_pwdir, datshell);
+	return (*head);
+}
 
-	if (chdir(cp_oldpwd) == -1)
-		prepareEnvron("PWD", copy_pwdir, datshell);
+/**
+ * include_Revar_node - add
+ * @head: head
+ * @lhvar: length
+ * @val: value
+ * @lval: length
+ * Return: address
+ */
+
+strct_var *include_Revar_node(strct_var **head, int lhvar,
+									char *val, int lval)
+{
+	strct_var *new, *temp;
+
+	new = malloc(sizeof(strct_var));
+	if (new == NULL)
+		return (NULL);
+
+	new->len_var = lhvar;
+	new->val = val;
+	new->len_val = lval;
+
+	new->next = NULL;
+	temp = *head;
+
+	if (temp == NULL)
+	{
+		*head = new;
+	}
 	else
-		prepareEnvron("PWD", cp_oldpwd, datshell);
+	{
+		while (temp->next != NULL)
+			temp = temp->next;
+		temp->next = new;
+	}
 
-	p_pwd = getenviron("PWD", datshell->dtenviron);
-
-	write(STDOUT_FILENO, p_pwd, string_length(p_pwd));
-	write(STDOUT_FILENO, "\n", 1);
-
-	freeCharMemDaf(copy_pwdir);
-	if (p_oldpwd)
-		freeCharMemDaf(cp_oldpwd);
-
-	datshell->status = 0;
-
-	chdir(p_pwd);
+	return (*head);
 }
 
-/**
- * change_dir_loc_2 - changes
- *
- * @datshell: data
- */
-
-void change_dir_loc_2(data_shell *datshell)
-{
-	char *p_pwd, *home;
-	char pwd[PATH_MAX];
-
-	getcwd(pwd, sizeof(pwd));
-	p_pwd = _strdup(pwd);
-
-	home = getenviron("HOME", datshell->dtenviron);
-
-	if (home == NULL)
-	{
-		prepareEnvron("OLDPWD", p_pwd, datshell);
-		freeCharMemDaf(p_pwd);
-		return;
-	}
-
-	if (chdir(home) == -1)
-	{
-		get_error(datshell, 2);
-		freeCharMemDaf(p_pwd);
-		return;
-	}
-
-	prepareEnvron("OLDPWD", p_pwd, datshell);
-	prepareEnvron("PWD", home, datshell);
-	freeCharMemDaf(p_pwd);
-	datshell->status = 0;
-}
-
-/**
- * change_dir_SH - changes
- *
- * @datshell: data
- * Return: 1 on success
- */
-
-int change_dir_SH(data_shell *datshell)
-{
-	char *dir;
-	int izhome, izhome2, izddash;
-
-	dir = datshell->args[1];
-
-	if (dir != NULL)
-	{
-		izhome = stringcompare("$HOME", dir);
-		izhome2 = stringcompare("~", dir);
-		izddash = stringcompare("--", dir);
-	}
-
-	if (dir == NULL || !izhome || !izhome2 || !izddash)
-	{
-		change_dir_loc_2(datshell);
-		return (1);
-	}
-
-	if (stringcompare("-", dir) == 0)
-	{
-		change_dir_lastarg(datshell);
-		return (1);
-	}
-
-	if (stringcompare(".", dir) == 0 || stringcompare("..", dir) == 0)
-	{
-		change_dir_ftp(datshell);
-		return (1);
-	}
-
-	change_dir_loc(datshell);
-
-	return (1);
-}
-
-/**
- * duplicate_character - counts
- *
- * @input: input
- * @i: index
- * Return: repetitions
- */
-
-int duplicate_character(char *input, int i)
-{
-	if (*(input - 1) == *input)
-		return (duplicate_character(input - 1, i + 1));
-
-	return (i);
-}
+/* .........................NUM 10 START.......................*/

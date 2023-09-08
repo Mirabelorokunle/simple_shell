@@ -1,183 +1,126 @@
-#include "header.h"
+#include "main.h"
 
+/* .........................NUM 5 BTW...........................*/
 /**
- * errordtenviron_message - error
- * @datshell: data
- * Return: error
- */
-
-char *errordtenviron_message(data_shell *datshell)
-{
-	int length;
-	char *error;
-	char *ver_strC;
-	char *msges;
-
-	ver_strC = autIToAlph(datshell->counter);
-	msges = ": Unable to add/remove from environment\n";
-	length = string_length(datshell->av[0]) + string_length(ver_strC);
-	length += string_length(datshell->args[0]) + string_length(msges) + 4;
-	error = malloc(sizeof(char) * (length + 1));
-	if (error == 0)
-	{
-		freeCharMemDaf(error);
-		freeCharMemDaf(ver_strC);
-		return (NULL);
-	}
-
-	string_copy(error, datshell->av[0]);
-	string_cartenate(error, ": ");
-	string_cartenate(error, ver_strC);
-	string_cartenate(error, ": ");
-	string_cartenate(error, datshell->args[0]);
-	string_cartenate(error, msges);
-	string_cartenate(error, "\0");
-	free(ver_strC);
-
-	return (error);
-}
-
-/**
- * error_RD_126 - error
- * @datshell: data
+ * error_separator_OPDaf - finds
  *
- * Return: The
+ * @input: input
+ * @i: index
+ * @lastarg: lastarg
+ * @count: lastarg
+ * @chkn: lastarg
+ * Return: index
  */
-
-char *error_RD_126(data_shell *datshell)
+int error_separator_OPDaf(char *input, int i, char lastarg,
+							int count, int chkn)
 {
-	int length;
-	char *ver_strC;
-	char *error;
+	int a = 0, b = 0, c;
 
-	ver_strC = autIToAlph(datshell->counter);
-	length = string_length(datshell->av[0]) + string_length(ver_strC);
-	length += string_length(datshell->args[0]) + 24;
-	error = malloc(sizeof(char) * (length + 1));
-	if (error == 0)
+	if (chkn == 1)
 	{
-		freeCharMemDaf(error);
-		freeCharMemDaf(ver_strC);
-		return (NULL);
+		if (lastarg == ';' || lastarg == '&')
+			return (i);
+
+		if (lastarg == '|')
+		{
+			count = duplicateChar(input, 0);
+			if (count == 0 || count > 1)
+				a = 4;
+		}
 	}
-	string_copy(error, datshell->av[0]);
-	string_cartenate(error, ": ");
-	string_cartenate(error, ver_strC);
-	string_cartenate(error, ": ");
-	string_cartenate(error, datshell->args[0]);
-	string_cartenate(error, ": Permission denied\n");
-	string_cartenate(error, "\0");
-	freeCharMemDaf(ver_strC);
-	return (error);
+
+	else
+	{
+		if (lastarg == ';' || lastarg == '|')
+			return (i);
+
+		if (lastarg == '&')
+		{
+			count = duplicateChar(input, 0);
+			if (count == 0 || count > 1)
+				b = 8;
+		}
+	}
+	c = a + b;
+	c = i;
+	return (c);
 }
 
+/* .........................NUM 5 END...........................*/
+
+/*..................ccccc............................*/
+
+
+
+/* .........................NUM 6 START.........................*/
 /**
- * SH_loop - Loop
+ * dis_stx_error - prints
  * @datshell: data
+ * @input: input
+ * @i: data
+ * @bool: input
  */
-
-void SH_loop(data_shell *datshell)
+void dis_stx_error(dataSHLL *datshell, char *input, int i, int bool)
 {
-	int loop, i_end_of_file;
-	char *input;
+	char *msges = NULL, *msges_two = NULL, *msges_three = NULL,
+			*error, *counter = NULL;
+	int length = 0, chkn;
 
-	loop = 1;
-	while (loop == 1)
+	if (input[i] == ';')
 	{
-		write(STDIN_FILENO, "prompt by dafe and mirabel$ ", 29);
-		input = scan_line(&i_end_of_file);
-		if (i_end_of_file != -1)
+		if (bool == 0)
 		{
-			input = remove_command(input);
-			if (input == NULL)
-				continue;
-
-			if (confirm_stx_error(datshell, input) == 1)
-			{
-				datshell->status = 2;
-				freeCharMemDaf(input);
-				continue;
-			}
-			input = rest_variable(input, datshell);
-			loop = separate_command_args(datshell, input);
-			datshell->counter += 1;
-			freeCharMemDaf(input);
+			chkn = 1;
+			dis_stx_errorDaf(input, i, chkn);
 		}
 		else
 		{
-			loop = 0;
-			freeCharMemDaf(input);
+			chkn = 2;
+			dis_stx_errorDaf(input, i, chkn);
 		}
 	}
+	if (input[i] == '|')
+	{
+		chkn = 3;
+		dis_stx_errorDaf(input, i, chkn);
+	}
+	if (input[i] == '&')
+	{
+		chkn = 4;
+		dis_stx_errorDaf(input, i, chkn);
+	}
+	dis_stx_errorDafIn2(datshell, msges, msges_two,
+					msges_three, length, counter);
+	error = malloc(sizeof(char) * (length + 1));
+	if (error == 0)
+	{
+		freeCharMemDaf(counter);
+		return;
+	}
+	dis_stx_errorDafIn(datshell, msges, msges_two,
+					msges_three, error, counter);
+	write(STDERR_FILENO, error, length);
+	freeCharMemDaf(error);
+	freeCharMemDaf(counter);
 }
 
-/* .........................NUM 14 START.......................*/
-
+/* .........................NUM 6 BTW...........................*/
 /**
- * exchange_character - swaps
- *
- * @input: inpu
- * @bool: type
- * Return: swapped
+ * dis_stx_errorDafIn2 - prints
+ * @datshell: data
+ * @msges: input
+ * @msges_two: data
+ * @msges_three: input
+ * @length: data
+ * @counter: input
  */
-
-char *exchange_character(char *input, int bool)
+void dis_stx_errorDafIn2(dataSHLL *datshell, char *msges, char *msges_two,
+					char *msges_three, int length, char *counter)
 {
-	int i = 0, chk;
-
-	if (bool == 0)
-	{
-		chk = 1;
-		input = exchange_characterDaf(input, i, chk);
-	}
-	else
-	{
-		chk = 2;
-		input = exchange_characterDaf(input, i, chk);
-	}
-	return (input);
+	msges_two = print_message('s');
+	msges_three = print_message('u');
+	counter = autIToAlph(datshell->counter);
+	length = string_length(datshell->av[0]) + string_length(counter);
+	length += string_length(msges) + string_length(msges_two)
+					+ string_length(msges_three) + 2;
 }
-
-/* .........................NUM 14 BTW.........................*/
-
-/**
- * exchange_characterDaf - swaps
- *
- * @input: input
- * @i: type
- * @chk: type
- * Return: swapped
- */
-
-char *exchange_characterDaf(char *input, int i, int chk)
-{
-	int chkgn;
-
-	if (chk == 1)
-	{
-		for (i = 0; input[i]; i++)
-		{
-			if (input[i] == '|')
-			{
-				chkgn = 1;
-				input = exchange_characterDafNest(input, i, chkgn);
-			}
-			if (input[i] == '&')
-			{
-				chkgn = 2;
-				input = exchange_characterDafNest(input, i, chkgn);
-			}
-		}
-	}
-	else
-	{
-		for (i = 0; input[i]; i++)
-		{
-			chkgn = 3;
-			input = exchange_characterDafNest(input, i, chkgn);
-		}
-	}
-	return (input);
-}
-
-/* .........................NUM 14 BTW.........................*/

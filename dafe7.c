@@ -1,162 +1,130 @@
-#include "header.h"
+#include "main.h"
 
 /**
- * next_command_arg - g
+ * environ_ident - compares
+ * @newenvi: name
+ * @name: name
  *
- * @list_s: separato
- * @list_l: comman
- * @datshell: data structure
+ * Return: 0
  */
 
-void next_command_arg(strct_list **list_s, srtct_line **list_l,
-						data_shell *datshell)
+int environ_ident(const char *newenvi, const char *name)
 {
-	int loop_sep1;
-	strct_list *ls_s1;
-	srtct_line *ls_l1;
+	int i, ress;
 
-	loop_sep1 = 1;
-	ls_s1 = *list_s;
-	ls_l1 = *list_l;
-
-	while (ls_s1 != NULL && loop_sep1)
+	for (i = 0; newenvi[i] != '='; i++)
 	{
-		if (datshell->status == 0)
+		if (newenvi[i] != name[i])
 		{
-			if (ls_s1->separator == '&' || ls_s1->separator == ';')
-				loop_sep1 = 0;
-			if (ls_s1->separator == '|')
-				ls_l1 = ls_l1->next, ls_s1 = ls_s1->next;
+			return (0);
 		}
-		else
-		{
-			if (ls_s1->separator == '|' || ls_s1->separator == ';')
-				loop_sep1 = 0;
-			if (ls_s1->separator == '&')
-				ls_l1 = ls_l1->next, ls_s1 = ls_s1->next;
-		}
-		if (ls_s1 != NULL && !loop_sep1)
-			ls_s1 = ls_s1->next;
 	}
-
-	*list_s = ls_s1;
-	*list_l = ls_l1;
+	ress = i + 1;
+	return (ress);
 }
 
 /**
- * separate_command_args - splits
- * @datshell: data
- * @input: input
- * Return: 0 to exit, 1 to continue
+ * getenviron - get
+ * @name: name
+ * @dtenviron: environment
+ *
+ * Return: value
  */
 
-int separate_command_args(data_shell *datshell, char *input)
+char *getenviron(const char *name, char **dtenviron)
 {
+	char *ptrEnvrmnt;
+	int i, movenmt;
 
-	strct_list *head_s, *list_s;
-	srtct_line *head_l, *list_l;
-	int loop;
-
-	head_s = NULL;
-	head_l = NULL;
-
-	include_nodes(&head_s, &head_l, input);
-
-	list_s = head_s;
-	list_l = head_l;
-
-	while (list_l != NULL)
+	ptrEnvrmnt = NULL;
+	movenmt = 0;
+	for (i = 0; dtenviron[i]; i++)
 	{
-		datshell->input = list_l->line;
-		datshell->args = separate_line(datshell->input);
-		loop = executecute_line(datshell);
-		free(datshell->args);
-
-		if (loop == 0)
+		movenmt = environ_ident(dtenviron[i], name);
+		if (movenmt)
+		{
+			ptrEnvrmnt = dtenviron[i];
 			break;
-
-		next_command_arg(&list_s, &list_l, datshell);
-
-		if (list_l != NULL)
-			list_l = list_l->next;
+		}
 	}
+	return (ptrEnvrmnt + movenmt);
+}
 
-	empty_dif_list(&head_s);
-	empty_LiN_list(&head_l);
-	if (loop == 0)
-		return (0);
+/**
+ * shEnv - print
+ *
+ * @datshell: data
+ * Return: 1
+ */
+
+int shEnv(dataSHLL *datshell)
+{
+	int i, j;
+
+	for (i = 0; datshell->dtenviron[i]; i++)
+	{
+		for (j = 0; datshell->dtenviron[i][j]; j++)
+			;
+
+		write(STDOUT_FILENO, datshell->dtenviron[i], j);
+		write(STDOUT_FILENO, "\n", 1);
+	}
+	datshell->status = 0;
+
 	return (1);
 }
 
 /**
- * executecute_line - finds
- * @datshell: data
- * Return: 1 on success.
- */
-
-int executecute_line(data_shell *datshell)
-{
-	int (*builtin)(data_shell *datshell);
-
-	if (datshell->args[0] == NULL)
-		return (1);
-
-	builtin = get_builtinFunPtr(datshell->args[0]);
-
-	if (builtin != NULL)
-		return (builtin(datshell));
-	return (for_command_execution(datshell));
-}
-
-/**
- * m_detail - copies
+ * prepareEnvron - sets
+ *
  * @name: name
  * @value: value
- * Return: new
+ * @datshell: data
  */
 
-char *m_detail(char *name, char *value)
+void prepareEnvron(char *name, char *value, dataSHLL *datshell)
 {
-	char *new;
-	int len_name1, len_value1, len;
+	int i;
+	char *varEnvf, *nameEnvy;
 
-	len_name1 = string_length(name);
-	len_value1 = string_length(value);
-	len = len_name1 + len_value1 + 2;
-	new = malloc(sizeof(char) * (len));
-	string_copy(new, name);
-	string_cartenate(new, "=");
-	string_cartenate(new, value);
-	string_cartenate(new, "\0");
-	return (new);
+	for (i = 0; datshell->dtenviron[i]; i++)
+	{
+		varEnvf = _strdup(datshell->dtenviron[i]);
+		nameEnvy = stringtok(varEnvf, "=");
+		if (stringcompr(nameEnvy, name) == 0)
+		{
+			free(datshell->dtenviron[i]);
+			datshell->dtenviron[i] = m_detail(nameEnvy, value);
+			free(varEnvf);
+			return;
+		}
+		free(varEnvf);
+	}
+	datshell->dtenviron = my_realloc_hdp(datshell->dtenviron, i,
+										sizeof(char *) * (i + 2));
+	datshell->dtenviron[i] = m_detail(name, value);
+	datshell->dtenviron[i + 1] = NULL;
 }
+
+/*..................hhhhh............................*/
+
+
 
 /**
- * quit_shell_op - exits
+ * setenviron - compar
  * @datshell: data
- * Return: 0 on success.
+ * Return: 1
  */
 
-int quit_shell_op(data_shell *datshell)
+int setenviron(dataSHLL *datshell)
 {
-	unsigned int ustatus;
-	int isDigit1;
-	int strLen1;
-	int big_numb;
-
-	if (datshell->args[1] != NULL)
+	if (datshell->args[1] == NULL || datshell->args[2] == NULL)
 	{
-		ustatus = theAtoi(datshell->args[1]);
-		isDigit1 = is_digitFunc(datshell->args[1]);
-		strLen1 = string_length(datshell->args[1]);
-		big_numb = ustatus > (unsigned int)INT_MAX;
-		if (!isDigit1 || strLen1 > 10 || big_numb)
-		{
-			get_error(datshell, 2);
-			datshell->status = 2;
-			return (1);
-		}
-		datshell->status = (ustatus % 256);
+		getErr(datshell, -1);
+		return (1);
 	}
-	return (0);
+	prepareEnvron(datshell->args[1], datshell->args[2], datshell);
+	return (1);
 }
+
+/* .........................NUM 12 START.......................*/

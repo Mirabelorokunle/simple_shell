@@ -1,123 +1,70 @@
-#include "main.h"
+#include "header.h"
 
+/* .........................NUM 18 START.......................*/
 /**
- * authenticator_asst_aliasDaf - Hlp
- *  * @hlp: lastarg
+ * aut_asstsetenvironee - Hlp
  */
 
-void authenticator_asst_aliasDaf(char *hlp)
+void aut_asstsetenvironee(void)
+{
+
+	char *hlp = "setenv: setenv (const char *name, const char *value,";
+
+	aut_asstsetenvironeeDaf(hlp);
+}
+
+/* .........................NUM 18 BTW.........................*/
+/**
+ * aut_asstsetenvironeeDaf - Hlp
+ * @hlp: str
+ */
+
+void aut_asstsetenvironeeDaf(char *hlp)
 {
 	write(STDOUT_FILENO, hlp, string_length(hlp));
-	hlp = "\tDefine or display aliases.\n ";
+	hlp = "int replace)\n\t";
+	write(STDOUT_FILENO, hlp, string_length(hlp));
+	hlp = "Add a new definition to the environment\n";
 	write(STDOUT_FILENO, hlp, string_length(hlp));
 }
 
-/* .........................NUM 4 END...........................*/
+/* .........................NUM 18 END.........................*/
 
-
-/* .........................NUM 5 START.........................*/
-
+/* .........................NUM 19 START.......................*/
 /**
- * error_separator_OP - finds
- *
- * @input: input
- * @i: index
- * @lastarg: lastarg
- * Return: index
- */
-int error_separator_OP(char *input, int i, char lastarg)
-{
-	int count, chkn, ret;
-
-	count = 0;
-	if (*input == '\0')
-		return (0);
-
-	if (*input == ' ' || *input == '\t')
-	{
-		ret = error_separator_OP(input + 1, i + 1, lastarg);
-		return (ret);
-	}
-
-	if (*input == ';')
-		if (lastarg == '|' || lastarg == '&' || lastarg == ';')
-			return (i);
-
-	if (*input == '|')
-	{
-		chkn = 1;
-		ret = error_separator_OPDaf(input, i, lastarg, count, chkn);
-		return (ret);
-	}
-
-	if (*input == '&')
-	{
-		chkn = 2;
-		ret = error_separator_OPDaf(input, i, lastarg, count, chkn);
-		return (ret);
-	}
-	ret = error_separator_OP(input + 1, i + 1, *input);
-
-	return (ret);
-}
-
-/**
- * empty_LiN_list - free
- * @head: head
+ * aut_asstunsetenvironddd - Hlp
  */
 
-void empty_LiN_list(srtctLine **head)
+void aut_asstunsetenvironddd(void)
 {
-	srtctLine *temp;
-	srtctLine *curr;
+	char *hlp = "unsetenv: unsetenv (const char *name)\n\t";
 
-	if (head != NULL)
-	{
-		curr = *head;
-		while ((temp = curr) != NULL)
-		{
-			curr = curr->next;
-			free_srtctLine_MemDaf(temp);
-		}
-		*head = NULL;
-	}
+	aut_asstunsetenvirondddDaf(hlp);
 }
 
+/* .........................NUM 19 BTW.........................*/
 /**
- * test_CurrentDir - checks
- * @path: type
- * @i: type
- * Return: 1
+ * aut_asstunsetenvirondddDaf - Hlp
+ * @hlp: str
  */
 
-int test_CurrentDir(char *path, int *i)
+void aut_asstunsetenvirondddDaf(char *hlp)
 {
-	if (path[*i] == ':')
-		return (1);
-
-	while (path[*i] != ':' && path[*i])
-	{
-		test_CurrentDirDaf(i);
-	}
-
-	if (path[*i])
-		test_CurrentDirDaf(i);
-
-	return (0);
+	write(STDOUT_FILENO, hlp, string_length(hlp));
+	hlp = "Remove an entry completely from the environment\n";
+	write(STDOUT_FILENO, hlp, string_length(hlp));
 }
-/* .........................NUM 10 BTW.........................*/
 
+/* .........................NUM 19 END.........................*/
+
+/* .........................NUM 20 START.......................*/
 /**
- * test_CurrentDirDaf - checks
- * @i: type
- * Return: 1
+ * aut_asstant_general - Entr
  */
 
-int test_CurrentDirDaf(int *i)
+void aut_asstant_general(void)
 {
-	*i += 1;
-	return (*i);
-}
-/* .........................NUM 10 END.........................*/
+	char *hlp = "^-^ bash, version 1.0(1)-release\n";
 
-/*..................fffff............................*/
+	aut_asstant_generalDaf(hlp);
+}

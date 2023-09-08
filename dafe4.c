@@ -1,123 +1,146 @@
-#include "main.h"
-
-/* .........................NUM 6 BTW...........................*/
-/**
- * dis_stx_errorDafIn - prints
- * @datshell: data
- * @msges: input
- * @msges_two: data
- * @msges_three: input
- * @error: index
- * @counter: a
- */
-void dis_stx_errorDafIn(dataSHLL *datshell, char *msges, char *msges_two,
-					char *msges_three, char *error, char *counter)
-{
-	stringCopy(error, datshell->av[0]);
-	stringConcate(error, ": ");
-	stringConcate(error, counter);
-	stringConcate(error, msges_two);
-	stringConcate(error, msges);
-	stringConcate(error, msges_three);
-	stringConcate(error, "\0");
-}
-/* .........................NUM 6 BTW...........................*/
+#include "header.h"
 
 /**
- * dis_stx_errorDaf - print
- * @input: inpu
- * @i: dat
- * @chkn: inpu
- * Return: char
- */
-char *dis_stx_errorDaf(char *input, int i, int chkn)
-{
-	char *In_msg;
-
-	if (chkn == 1)
-		In_msg = (input[i + 1] == ';' ? ";;" : ";");
-	else if (chkn == 1)
-		In_msg = (input[i - 1] == ';' ? ";;" : ";");
-	else if (chkn == 1)
-		In_msg = (input[i + 1] == '|' ? "||" : "|");
-	else
-		In_msg = (input[i + 1] == '&' ? "&&" : "&");
-	return (In_msg);
-}
-
-/* .........................NUM 6 END...........................*/
-
-/**
- * confirm_stx_error - intermediate
+ * exchange_characterDafNest - swaps
  *
+ * @input: inpu
+ * @i: type
+ * @chkgn: type
+ * Return: swapped
+ */
+
+char *exchange_characterDafNest(char *input, int i, int chkgn)
+{
+	if (chkgn == 1)
+	{
+		if (input[i + 1] != '|')
+			input[i] = 16;
+		else
+			i++;
+	}
+	else if (chkgn == 2)
+	{
+		if (input[i + 1] != '&')
+			input[i] = 12;
+		else
+			i++;
+	}
+	else
+	{
+		input[i] = (input[i] == 16 ? '|' : input[i]);
+		input[i] = (input[i] == 12 ? '&' : input[i]);
+	}
+	return (input);
+}
+
+/* .........................NUM 14 END.........................*/
+
+/* .........................NUM 15 START.......................*/
+
+/**
+ * undo_stringForRev - reverses
+ * @s: input
+ */
+
+void undo_stringForRev(char *s)
+{
+	int count = 0, i, j = 0;
+	char *str, temp = 'A';
+
+	while (count >= 0)
+	{
+		if (s[count] == '\0')
+			break;
+		count++;
+	}
+	str = s;
+
+	for (i = 0; i < (count - 1); i++)
+	{
+		undo_stringForRevDaf(i, j, str, temp);
+	}
+}
+
+/* .........................NUM 15 BTW.........................*/
+
+/**
+ * undo_stringForRevDaf - reverses
+ * @i: input
+ * @j: input
+ * @str: input
+ * @temp: input
+ */
+
+void undo_stringForRevDaf(int i, int j, char *str, char temp)
+{
+	for (j = i + 1; j > 0; j--)
+	{
+		undo_stringForRevDafNest(j, str, temp);
+	}
+}
+
+/* .........................NUM 15 BTW.........................*/
+
+/**
+ * undo_stringForRevDafNest - reverses
+ * @j: input
+ * @str: input
+ * @temp: input
+ */
+
+void undo_stringForRevDafNest(int j, char *str, char temp)
+{
+	temp = *(str + j);
+	*(str + j) = *(str + (j - 1));
+	*(str + (j - 1)) = temp;
+}
+
+/* .........................NUM 15 END.........................*/
+
+/**
+ * change_dir_ftp - changes
  * @datshell: data
- * @input: input
- * Return: 1
  */
 
-int confirm_stx_error(dataSHLL *datshell, char *input)
+void change_dir_ftp(data_shell *datshell)
 {
-	int begng = 0, f_char = 0, i = 0;
+	char pwd[PATH_MAX], *dir, *copy_pwdir, *copy_string_tok_pwd;
 
-	f_char = baseChar(input, &begng);
-	if (f_char == -1)
+	getcwd(pwd, sizeof(pwd));
+	copy_pwdir = _strdup(pwd);
+	prepareEnvron("OLDPWD", copy_pwdir, datshell);
+	dir = datshell->args[1];
+	if (stringcompare(".", dir) == 0)
 	{
-		dis_stx_error(datshell, input, begng, 0);
-		return (1);
+		prepareEnvron("PWD", copy_pwdir, datshell);
+		freeCharMemDaf(copy_pwdir);
+		return;
 	}
-
-	i = error_separator_OP(input + begng, 0, *(input + begng));
-	if (i != 0)
+	if (stringcompare("/", copy_pwdir) == 0)
 	{
-		dis_stx_error(datshell, input, begng + i, 1);
-		return (1);
+		freeCharMemDaf(copy_pwdir);
+		return;
 	}
-	return (0);
-}
-
-
-/*..................ddddd............................*/
-
-
-
-/* .........................NUM 7 START.........................*/
-
-/**
- * empty_dif_list - free
- * @head: head
- */
-
-void empty_dif_list(strctList **head)
-{
-	strctList *temp;
-	strctList *curr;
-
-	if (head != NULL)
+	copy_string_tok_pwd = copy_pwdir;
+	undo_stringForRev(copy_string_tok_pwd);
+	copy_string_tok_pwd = stringtok(copy_string_tok_pwd, "/");
+	if (copy_string_tok_pwd != NULL)
 	{
-		curr = *head;
-		while ((temp = curr) != NULL)
-		{
-			curr = curr->next;
-			free_strct_list_MemDaf(temp);
-		}
-		*head = NULL;
+		copy_string_tok_pwd = stringtok(NULL, "\0");
+
+		if (copy_string_tok_pwd != NULL)
+			undo_stringForRev(copy_string_tok_pwd);
 	}
+	if (copy_string_tok_pwd != NULL)
+	{
+		chdir(copy_string_tok_pwd);
+		prepareEnvron("PWD", copy_string_tok_pwd, datshell);
+	}
+	else
+	{
+		chdir("/");
+		prepareEnvron("PWD", "/", datshell);
+	}
+	datshell->status = 0;
+	freeCharMemDaf(copy_pwdir);
 }
-
-/* .........................NUM 7 BTW...........................*/
-/**
- * free_strct_list_MemDaf - frees
- * @temp: hea
- */
-
-void free_strct_list_MemDaf(strctList *temp)
-{
-	free(temp);
-}
-/* .........................NUM 7 END...........................*/
-
-
-
-
-/* .........................NUM 8 START.........................*/
-
